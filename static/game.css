@@ -1,0 +1,16 @@
+body{
+  margin: 0px;
+}
+
+#game-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #333;
+}
+
+canvas{
+  border-radius: 10px;
+}
