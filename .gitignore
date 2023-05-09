@@ -1,3 +1,6 @@
 old/*
 tiled_project/*
 barkinator5000*
+nbs/*
+__pycache__/*
+.vscode/*

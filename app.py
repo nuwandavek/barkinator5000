@@ -1,6 +1,8 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 
+from helpers import World
+
 app = Flask(
   __name__,
   static_url_path='',
@@ -10,40 +12,21 @@ app = Flask(
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
-# define initial state of the game
-game_state = {
-  'player1': {
-    'position': [0, 0, 0]
-  },
-  'player2': {
-    'position': [10, 0, 0]
-  }
-}
+world = World("./static/green.json")
+# Initialize with some characters
+for idx, pos in enumerate([(-250, -210), (-250, 0)]):
+  world.add_puptrons(idx, pos)
 
 
 @socketio.on('connect')
 def handle_connect():
-  # send initial game state to the client
-  emit('update_state', game_state)
+  emit('update_state', world.state)
 
 
 @socketio.on('move')
 def handle_move(data):
-  # update player position based on arrow key input
-  player_id = data['player_id']
-  direction = data['direction']
-  position = game_state[player_id]['position']
-  if direction == 'up':
-    position[1] += 5
-  elif direction == 'down':
-    position[1] -= 5
-  elif direction == 'left':
-    position[0] -= 5
-  elif direction == 'right':
-    position[0] += 5
-
-  # send updated game state to all clients
-  emit('update_state', game_state, broadcast=True)
+  world.puptrons[data['id']].move(data['direction'], restricted_polygons=world.restricted_polygons, puptrons=world.puptrons)
+  emit('update_state', world.state, broadcast=True)
 
 
 @app.route('/')

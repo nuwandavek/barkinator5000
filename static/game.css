@@ -1,5 +1,9 @@
 body{
   margin: 0px;
+  background: #333;
+  color: #fff;
+  font-family: 'VT323', monospace;
+  text-align: center;
 }
 
 #game-container {
@@ -7,10 +11,13 @@ body{
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: #333;
 }
 
 canvas{
   border-radius: 10px;
+}
+
+#title{
+  font-size: 75px;
+  margin: 0px;
 }
