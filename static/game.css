@@ -1,16 +1,14 @@
-body{
-  margin: 0px;
-  background: #333;
-  color: #fff;
-  font-family: 'VT323', monospace;
-  text-align: center;
+:root {
+  --bs-body-bg: #333 !important;
+  --bs-body-color: #fff!important;
+  --bs-body-font-family: 'VT323', monospace !important;
+  --bs-body-font-size: 25px !important;
 }
 
-#game-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+
+body{
+  text-align: center !important;
+  font-size: var(--bs-body-font-size) !important;
 }
 
 canvas{
@@ -20,4 +18,72 @@ canvas{
 #title{
   font-size: 75px;
   margin: 0px;
+}
+
+#game-chat{
+  margin-left: 10px;
+  position: relative;
+}
+
+#game-chat-2{
+  height: 600px;
+  background: #222;
+  width: 400px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #333;
+  padding: 10px;
+}
+
+#game-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+#chat-title{
+  height: 60px;
+  border-bottom: 1px #333 solid;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#chat-input{
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#chat-input-input{
+  margin: 0px;
+  /* padding: 10px; */
+}
+
+.form-control{
+  font-size: var(--bs-body-font-size) !important;
+}
+
+.disableDiv {
+  pointer-events: none;
+}
+
+#overlay{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: #eee;
+  border-radius: 10px;
+  z-index: 10;
+  opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 50px;
+  color: #e74c3c;
 }

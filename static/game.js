@@ -53,7 +53,7 @@ socket.on('update_state', (data) => {
 // set up renderer and add objects to the scene
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
-document.getElementById('game-container').appendChild(renderer.domElement);
+document.getElementById('game-map').appendChild(renderer.domElement);
 
 
 var textureLoader = new THREE.TextureLoader();

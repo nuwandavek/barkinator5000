@@ -14,8 +14,9 @@ socketio = SocketIO(app)
 
 world = World("./static/green.json")
 # Initialize with some characters
-for idx, pos in enumerate([(-250, -210), (-250, 0)]):
-  world.add_puptrons(idx, pos)
+world.add_player('kiwi')
+for name, pos in [('p1', (-250, -210)), ('p2', (-250, 0))]:
+  world.add_npc(name, pos)
 
 
 @socketio.on('connect')
@@ -25,8 +26,9 @@ def handle_connect():
 
 @socketio.on('move')
 def handle_move(data):
-  world.puptrons[data['id']].move(data['direction'], restricted_polygons=world.restricted_polygons, puptrons=world.puptrons)
-  emit('update_state', world.state, broadcast=True)
+  if data['id'] in world.players:
+    world.puptrons[data['id']].move(data['direction'], restricted_polygons=world.restricted_polygons, puptrons=world.puptrons)
+    emit('update_state', world.state, broadcast=True)
 
 
 @app.route('/')
@@ -35,4 +37,4 @@ def index():
 
 
 if __name__ == '__main__':
-  socketio.run(app, host="0.0.0.0", port=3000, debug=True)
+  socketio.run(app, host="0.0.0.0", port=3000, debug=False)

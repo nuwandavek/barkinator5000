@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import random
+from collections import defaultdict
 from shapely.geometry import Point, Polygon
 
 
@@ -17,11 +18,22 @@ RESTRICTED_NAME = 'restricted'
 
 class World:
   def __init__(self, map=None):
-    self.puptrons = {}
+    self.npcs = defaultdict()
+    self.players = defaultdict()
     self.restricted_polygons = self.get_restricted_polygons(map)
+    self.conversations = defaultdict(dict)
 
-  def add_puptrons(self, idx, pos=[]):
-    self.puptrons[f"puptron-{idx}"] = Puptron(len(self.puptrons.keys()), pos)
+  def add_npc(self, name, pos=[]):
+    self.npcs[name] = Puptron(name, pos, self)
+    print(f"{name} added at {self.npcs[name].position}")
+
+  def add_player(self, name, pos=None):
+    self.players[name] = Puptron(name, pos, self)
+    print(f"{name} added at {self.players[name].position}")
+
+  @property
+  def puptrons(self):
+    return {**self.npcs, **self.players}
 
   @property
   def state(self):
@@ -46,16 +58,20 @@ class World:
 
 
 class Puptron:
-  def __init__(self, idx, pos=None):
-    self.idx = idx
-    self.name = f"puptron-{idx}"
-    self.color = Colors(idx)
-    self.position = self.spawn(*MAP_LIMITS) if pos is None else [*pos, 0]
+  def __init__(self, name, pos=None, world=None):
+    self.name = name
+    self._world = world
+    self.color = Colors(len(world.puptrons.values()))
+    self.position = self.spawn(MAP_LIMITS) if pos is None else [*pos, 0]
     self.rotation = self.init_rotation()
+    self.barkable = []
 
-  @staticmethod
-  def spawn(bounds):
-    return [random.randint(bounds[0], bounds[2]), random.randint(bounds[1], bounds[3]), 0]
+  def spawn(self, bounds):
+    while True:
+      pos = [random.randint(bounds[0], bounds[2]), random.randint(bounds[1], bounds[3]), 0]
+      if self.is_valid_pos(pos):
+        break
+    return pos
 
   @staticmethod
   def init_rotation():
@@ -69,10 +85,11 @@ class Puptron:
       'name': self.name,
       'color': self.color,
       'position': list(self.position),
-      'rotation': list(self.rotation)
+      'rotation': list(self.rotation),
+      'barkable': self.barkable
     }
 
-  def move(self, direction, movement=5, restricted_polygons=[], puptrons=[]):
+  def move(self, direction, movement=5):
     tempos = self.position.copy()
     if direction == 'up':
       tempos[1] += movement
@@ -83,16 +100,19 @@ class Puptron:
     elif direction == 'right':
       tempos[0] += movement
 
-    if self.is_valid_pos(tempos, restricted_polygons, puptrons):
+    if self.is_valid_pos(tempos):
       self.position = tempos
-    # print(self.position)
+    self.set_barkable()
 
-  def is_valid_pos(self, pos, restricted_polygons, puptrons, tolerance_dist=15):
-    objects = restricted_polygons + [Point(x.position[0], x.position[1]) for x in puptrons.values() if x.name != self.name]
-    # print(objects)
+  def set_barkable(self, min_bark_distance=30):
+    point = Point(self.position[0], self.position[1])
+    character_dists = {x.name: point.distance(Point(x.position[0], x.position[1])) for x in self._world.puptrons.values() if x.name != self.name}
+    self.barkable = [k for k, v in character_dists.items() if v <= min_bark_distance]
+
+  def is_valid_pos(self, pos, tolerance_dist=15):
+    objects = self._world.restricted_polygons + [Point(x.position[0], x.position[1]) for x in self._world.puptrons.values() if x.name != self.name]
     point = Point(pos[0], pos[1])
     for polygon in objects:
-      # print(point.distance(polygon))
       if point.distance(polygon) < tolerance_dist:
         return False
 
