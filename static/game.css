@@ -33,7 +33,7 @@ canvas{
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid #333;
+  border: 1px solid #555;
   padding: 10px;
 }
 
@@ -46,7 +46,7 @@ canvas{
 
 #chat-title{
   height: 60px;
-  border-bottom: 1px #333 solid;
+  border-bottom: 1px #555 solid;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -77,7 +77,7 @@ canvas{
   position: absolute;
   height: 100%;
   width: 100%;
-  background-color: #eee;
+  background-color: #222;
   border-radius: 10px;
   z-index: 10;
   opacity: 0.8;
@@ -86,4 +86,42 @@ canvas{
   justify-content: center;
   font-size: 50px;
   color: #e74c3c;
+}
+
+#chat-character-name{
+  padding-left: 5px;
+  margin: 0px;
+}
+
+.chat-character-dp{
+  display: flex;
+}
+
+.chat{
+  background: #fff;
+  border-radius: 10px;
+  padding: 5px 10px 5px 10px;
+  max-width: 300px;
+  color: #000;
+  line-height: 1;
+  text-align: justify;
+}
+
+.chat-sent{
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+}
+
+.chat-received{
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+}
+
+#chat-body{
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  overflow-y: scroll;
 }

@@ -2,6 +2,7 @@ const width = 600;
 const height = 600;
 let gameState = [];
 const threePlayers = {}
+const mainPlayer = 'kiwi';
 
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(
@@ -23,16 +24,17 @@ fiveTone.magFilter = THREE.NearestFilter
 
 // update player positions based on arrow key input
 const handleKeyDown = (event) => {
-  const id = 'puptron-0';
   const direction = event.key.replace('Arrow', '').toLowerCase();
-  socket.emit('move', { id, direction });
+  if (['up', 'right', 'left', 'down'].includes(direction)){
+    socket.emit('move', { mainPlayer, direction });
+  }
 };
 document.addEventListener('keydown', handleKeyDown);
 
 // set up socket.io connection
 const socket = io();
 socket.on('update_state', (data) => {
-  console.log(data);
+  // console.log(data);
   //0. Set gamesState
   gameState = data;
   
@@ -47,8 +49,47 @@ socket.on('update_state', (data) => {
       scene.add(threePlayers[puptron.name]);
     }
     threePlayers[puptron.name].position.set(...puptron.position);
+    if ((puptron.name === mainPlayer) && (puptron.bark != null)){
+      enableGameChat(gameState.filter( pup => pup.name === puptron.barkable)[0], puptron.bark);
+    }
+    else{
+      disableGameChat();
+    }
   });
 });
+
+
+function populateChats(chats){
+  let chatbody = $("#chat-body");
+  chatbody.html('');
+  chats.forEach(chat=>{
+    if(chat.type === 'sent'){
+      chatbody.append("<div class='chat-sent'><p class='chat'>"+chat.message+"</p></div>");
+    }
+    else if(chat.type === 'received'){
+      chatbody.append("<div class='chat-received'><p class='chat'>"+chat.message+"</p></div>");
+    }
+  });
+  chatbody.animate({scrollTop: chatbody[0].scrollHeight});
+}
+
+function enableGameChat(character, chats){
+  $("#overlay").hide();
+  // $("#game-chat-2").removeClass('disableDiv');
+  $(".chat-character-dp").css('color', character.color);
+  $("#chat-character-name").text(character.name);
+  populateChats(chats);
+}
+
+function disableGameChat(){
+  $("#overlay").show();
+  // $("#game-chat-2").addClass('disableDiv');
+  $(".chat-character-dp").css('color', "#fff");
+  $("#chat-character-name").text('');
+  $("#chat-body").html('')
+
+}
+
 
 // set up renderer and add objects to the scene
 const renderer = new THREE.WebGLRenderer();

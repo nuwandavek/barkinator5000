@@ -14,8 +14,15 @@ socketio = SocketIO(app)
 
 world = World("./static/green.json")
 # Initialize with some characters
-world.add_player('kiwi')
-for name, pos in [('p1', (-250, -210)), ('p2', (-250, 0))]:
+world.add_player('kiwi', chat={'apple': [
+  {'type': 'sent', 'message': "Hey! How's it going?"},
+  {'type': 'received', 'message': "Yoyo, just chilling."},
+  {'type': 'sent', 'message': "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset"}
+]})
+for name, pos in [
+  ('apple', (-250, -210)),
+  ('mango', (-250, 0))
+]:
   world.add_npc(name, pos)
 
 
@@ -26,8 +33,8 @@ def handle_connect():
 
 @socketio.on('move')
 def handle_move(data):
-  if data['id'] in world.players:
-    world.puptrons[data['id']].move(data['direction'], restricted_polygons=world.restricted_polygons, puptrons=world.puptrons)
+  if data['mainPlayer'] in world.players:
+    world.puptrons[data['mainPlayer']].move(data['direction'])
     emit('update_state', world.state, broadcast=True)
 
 
@@ -37,4 +44,4 @@ def index():
 
 
 if __name__ == '__main__':
-  socketio.run(app, host="0.0.0.0", port=3000, debug=False)
+  socketio.run(app, host="0.0.0.0", port=3000, debug=True)

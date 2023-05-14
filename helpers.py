@@ -1,8 +1,11 @@
 import json
+import logging
 import numpy as np
 import random
 from collections import defaultdict
 from shapely.geometry import Point, Polygon
+
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
 class Colors():
@@ -21,15 +24,12 @@ class World:
     self.npcs = defaultdict()
     self.players = defaultdict()
     self.restricted_polygons = self.get_restricted_polygons(map)
-    self.conversations = defaultdict(dict)
 
-  def add_npc(self, name, pos=[]):
-    self.npcs[name] = Puptron(name, pos, self)
-    print(f"{name} added at {self.npcs[name].position}")
+  def add_npc(self, name, pos=None, chat=None):
+    self.npcs[name] = Puptron(name, pos, chat, self)
 
-  def add_player(self, name, pos=None):
-    self.players[name] = Puptron(name, pos, self)
-    print(f"{name} added at {self.players[name].position}")
+  def add_player(self, name, pos=None, chat=None):
+    self.players[name] = Puptron(name, pos, chat, self)
 
   @property
   def puptrons(self):
@@ -58,13 +58,16 @@ class World:
 
 
 class Puptron:
-  def __init__(self, name, pos=None, world=None):
+  def __init__(self, name, pos=None, chat=None, world=None):
     self.name = name
     self._world = world
     self.color = Colors(len(world.puptrons.values()))
     self.position = self.spawn(MAP_LIMITS) if pos is None else [*pos, 0]
     self.rotation = self.init_rotation()
-    self.barkable = []
+    self.barkable = None
+    self.bark = defaultdict(list) if chat is None else defaultdict(list, chat)
+
+    logging.info(f"Created puptron '{self.name}' at {self.position}")
 
   def spawn(self, bounds):
     while True:
@@ -86,7 +89,8 @@ class Puptron:
       'color': self.color,
       'position': list(self.position),
       'rotation': list(self.rotation),
-      'barkable': self.barkable
+      'barkable': self.barkable,
+      'bark': None if self.barkable is None else self.bark[self.barkable]
     }
 
   def move(self, direction, movement=5):
@@ -107,7 +111,10 @@ class Puptron:
   def set_barkable(self, min_bark_distance=30):
     point = Point(self.position[0], self.position[1])
     character_dists = {x.name: point.distance(Point(x.position[0], x.position[1])) for x in self._world.puptrons.values() if x.name != self.name}
-    self.barkable = [k for k, v in character_dists.items() if v <= min_bark_distance]
+    # ToDo: picking the first for now, maintain a list later
+    # ToDo: barkable on the other character needs to be set too, critical for multiplayer games
+    barkable = [k for k, v in character_dists.items() if v <= min_bark_distance]
+    self.barkable = None if len(barkable) == 0 else barkable[0]
 
   def is_valid_pos(self, pos, tolerance_dist=15):
     objects = self._world.restricted_polygons + [Point(x.position[0], x.position[1]) for x in self._world.puptrons.values() if x.name != self.name]
