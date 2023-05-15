@@ -19,6 +19,9 @@
         <div id="overlay">
           <p>Go to a character</p>
         </div>
+        <div id="loading-div">
+          <div id="loading" class="spinner-grow" style="width: 3rem; height: 3rem;" role="status"></div>
+        </div>
         <div id="game-chat-2">
           <div id="chat-title">
             <div class="chat-character-dp">
@@ -30,8 +33,8 @@
           <div id="chat-body"></div>
           <div id="chat-input">
             <div class="input-group" id="chat-input-input"t>
-              <input type="text" class="form-control" placeholder="Ask away!" aria-describedby="button-addon2">
-              <button class="btn btn-outline-secondary" type="button" id="button-addon2">
+              <input type="text" class="form-control" placeholder="Ask away!" id="input-send">
+              <button class="btn btn-outline-secondary" type="button" id="button-send">
                 <i class="bi bi-send-fill"></i>
               </button>
             </div>          

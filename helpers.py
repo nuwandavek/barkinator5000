@@ -4,6 +4,7 @@ import numpy as np
 import random
 from collections import defaultdict
 from shapely.geometry import Point, Polygon
+from chat import character_respond
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -25,11 +26,11 @@ class World:
     self.players = defaultdict()
     self.restricted_polygons = self.get_restricted_polygons(map)
 
-  def add_npc(self, name, pos=None, chat=None):
-    self.npcs[name] = Puptron(name, pos, chat, self)
+  def add_npc(self, name, pos=None, chat=None, script=None):
+    self.npcs[name] = Puptron(name, pos, chat, script, self)
 
-  def add_player(self, name, pos=None, chat=None):
-    self.players[name] = Puptron(name, pos, chat, self)
+  def add_player(self, name, pos=None, chat=None, script=None):
+    self.players[name] = Puptron(name, pos, chat, script, self)
 
   @property
   def puptrons(self):
@@ -58,7 +59,7 @@ class World:
 
 
 class Puptron:
-  def __init__(self, name, pos=None, chat=None, world=None):
+  def __init__(self, name, pos=None, chat=None, script=None, world=None):
     self.name = name
     self._world = world
     self.color = Colors(len(world.puptrons.values()))
@@ -66,6 +67,7 @@ class Puptron:
     self.rotation = self.init_rotation()
     self.barkable = None
     self.bark = defaultdict(list) if chat is None else defaultdict(list, chat)
+    self.script = script
 
     logging.info(f"Created puptron '{self.name}' at {self.position}")
 
@@ -107,6 +109,11 @@ class Puptron:
     if self.is_valid_pos(tempos):
       self.position = tempos
     self.set_barkable()
+
+  def chat(self, player, message):
+    self.bark[player].append({'type': 'sent', 'message': message})
+    response = character_respond(self._world.npcs[player].script, message)
+    self.bark[player].append({'type': 'received', 'message': response})
 
   def set_barkable(self, min_bark_distance=30):
     point = Point(self.position[0], self.position[1])

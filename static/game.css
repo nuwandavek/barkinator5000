@@ -18,6 +18,7 @@ canvas{
 #title{
   font-size: 75px;
   margin: 0px;
+  color: #fff;
 }
 
 #game-chat{
@@ -124,4 +125,26 @@ canvas{
   flex-direction: column;
   justify-content: start;
   overflow-y: scroll;
+  height: 100%;
+  padding: 20px 0px 20px 0px;
+}
+
+#loading-div{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  /* background-color: #222; */
+  border-radius: 10px;
+  z-index: 20;
+  opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  pointer-events: none;
+}
+
+#loading{
+  display: none;
 }

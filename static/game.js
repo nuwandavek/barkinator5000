@@ -3,6 +3,7 @@ const height = 600;
 let gameState = [];
 const threePlayers = {}
 const mainPlayer = 'kiwi';
+let chatPlayer = null;
 
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(
@@ -24,8 +25,11 @@ fiveTone.magFilter = THREE.NearestFilter
 
 // update player positions based on arrow key input
 const handleKeyDown = (event) => {
+  if (event.key === 'Enter'){
+    sendChat();
+  }
   const direction = event.key.replace('Arrow', '').toLowerCase();
-  if (['up', 'right', 'left', 'down'].includes(direction)){
+  if ((['up', 'right', 'left', 'down'].includes(direction)) && !($("#input-send").is( ":focus" ))){
     socket.emit('move', { mainPlayer, direction });
   }
 };
@@ -49,11 +53,13 @@ socket.on('update_state', (data) => {
       scene.add(threePlayers[puptron.name]);
     }
     threePlayers[puptron.name].position.set(...puptron.position);
-    if ((puptron.name === mainPlayer) && (puptron.bark != null)){
-      enableGameChat(gameState.filter( pup => pup.name === puptron.barkable)[0], puptron.bark);
-    }
-    else{
-      disableGameChat();
+    if (puptron.name === mainPlayer){
+      if (puptron.bark != null){
+        enableGameChat(gameState.filter( pup => pup.name === puptron.barkable)[0], puptron.bark);
+      }
+      else{
+        disableGameChat();
+      }
     }
   });
 });
@@ -71,21 +77,26 @@ function populateChats(chats){
     }
   });
   chatbody.animate({scrollTop: chatbody[0].scrollHeight});
+  $("#input-send").val('');
+
 }
 
 function enableGameChat(character, chats){
+  chatPlayer = character.name;
   $("#overlay").hide();
   // $("#game-chat-2").removeClass('disableDiv');
   $(".chat-character-dp").css('color', character.color);
-  $("#chat-character-name").text(character.name);
+  // $("#chat-character-name").text(character.name);
   populateChats(chats);
+  $("#loading").hide();
 }
 
 function disableGameChat(){
+  chatPlayer = null;
   $("#overlay").show();
   // $("#game-chat-2").addClass('disableDiv');
   $(".chat-character-dp").css('color', "#fff");
-  $("#chat-character-name").text('');
+  // $("#chat-character-name").text('');
   $("#chat-body").html('')
 
 }
@@ -122,3 +133,32 @@ const animate = () => {
   renderer.render(scene, camera);
 };
 animate();
+
+
+$("#button-send").click(()=>sendChat());
+
+function sendChat(){
+  let message = $("#input-send").val()
+  if (message != ""){
+    socket.emit('chat', { mainPlayer, chatPlayer, message});
+  }
+  $("#input-send").val('');
+  $("#loading").show();
+}
+
+
+// create an AudioListener and add it to the camera
+const listener = new THREE.AudioListener();
+camera.add( listener );
+
+// create a global audio source
+const sound = new THREE.Audio( listener );
+
+// load a sound and set it as the Audio object's buffer
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load( 'sounds.mp3', function( buffer ) {
+	sound.setBuffer( buffer );
+	sound.setLoop( true );
+	sound.setVolume( 0.5 );
+	sound.play();
+});
